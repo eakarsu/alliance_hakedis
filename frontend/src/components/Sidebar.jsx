@@ -5,7 +5,8 @@ import {
   FileSpreadsheet, BarChart3, Bot, LogOut, Shield, Eye,
   GitPullRequest, MapPin, DollarSign, Share2, ShieldCheck,
   GitBranch, Monitor, Network, FileSearch, CalendarDays, UsersRound,
-  Layers, Receipt, Workflow, Plus, Settings
+  Layers, Receipt, Workflow, Plus, Settings,
+  Sparkles
 } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 import NotificationBell from './NotificationBell'
@@ -93,6 +94,7 @@ const navSections = [
       { to: '/activities', label: 'Activities', icon: Activity, page: 'activities' },
       { to: '/kpi', label: 'KPI Contributions', icon: BarChart3, page: 'kpi' },
       { to: '/ai', label: 'AI Assistant', icon: Bot, page: 'ai' },
+      { to: '/ai-insights', label: 'AI Insights', icon: Sparkles, page: 'ai' },
     ]
   },
 ]

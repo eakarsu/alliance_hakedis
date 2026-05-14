@@ -79,6 +79,15 @@ app.use('/api/approval-workflows', auth, requireAccess('approval-workflows'), re
 app.use('/api/meeting-notes', auth, requireAccess('meeting-notes'), require('./routes/meetingNotes'));
 app.use('/api/advisory-requests', auth, requireAccess('advisory-requests'), require('./routes/advisoryRequests'));
 
+// Pass-5 backlog: NEEDS-PRODUCT-DECISION AI endpoints
+app.use('/api/ai', require('./routes/aiBacklog'));
+// Pass-5 backlog: NEEDS-SCHEMA additive features (CREATE TABLE IF NOT EXISTS)
+app.use('/api/governance-matrix', require('./routes/governanceMatrix'));
+app.use('/api/audit-reports', require('./routes/auditReports'));
+app.use('/api/contract-versions', require('./routes/contractVersions'));
+app.use('/api/payout-reconciliation', require('./routes/payoutReconciliation'));
+app.use('/api/custom', auth, require('./routes/customFeatures'));
+
 // User list for pickers (auth only, returns minimal user info)
 app.get('/api/users/list', auth, async (req, res) => {
   try {
@@ -110,8 +119,14 @@ app.use((err, req, res, next) => {
   res.status(500).json({ error: 'Internal server error', message: err.message });
 });
 
+// // === Batch 09 Gaps & Frontend Mounts ===
+app.use('/api/gap-ai-alliance_hakedis', require('./routes/batch09GapAi')); // // === Batch 09 Gaps & Frontend Mounts ===
+app.use('/api/gap-nonai-alliance_hakedis', require('./routes/batch09GapNonai')); // // === Batch 09 Gaps & Frontend Mounts ===
+
 app.listen(PORT, () => {
   console.log(`Alliance CRM Backend running on port ${PORT}`);
 });
 
 module.exports = app;
+
+
