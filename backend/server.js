@@ -88,6 +88,9 @@ app.use('/api/contract-versions', require('./routes/contractVersions'));
 app.use('/api/payout-reconciliation', require('./routes/payoutReconciliation'));
 app.use('/api/custom', auth, require('./routes/customFeatures'));
 
+// Hakedis Custom Views (mounted BEFORE 404 handler; open for in-app fetch)
+app.use('/api/custom-views', require('./routes/customViews'));
+
 // User list for pickers (auth only, returns minimal user info)
 app.get('/api/users/list', auth, async (req, res) => {
   try {
