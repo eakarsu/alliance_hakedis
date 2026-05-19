@@ -442,4 +442,210 @@ router.post('/suggest', auth, async (req, res) => {
   }
 });
 
+// POST /api/ai/optimize-economics
+// Suggests revenue-share / economics adjustments for an opportunity given the current split.
+// Mechanical addition based on audit recommendation: "economics optimization".
+router.post('/optimize-economics', auth, async (req, res) => {
+  try {
+    const { opportunity_id, scenario } = req.body;
+    if (!opportunity_id) {
+      return res.status(400).json({ error: 'opportunity_id is required' });
+    }
+
+    if (isRestricted(req.user.role)) {
+      return res.status(403).json({ error: 'Your role does not have access to economics optimization' });
+    }
+
+    const hasAccess = await canAccessRecord(
+      pool, 'opportunities', 'op', opportunityFilter, opportunity_id, req.user.role, req.user.id
+    );
+    if (!hasAccess) {
+      return res.status(403).json({ error: 'Access denied to this opportunity' });
+    }
+
+    const oppResult = await pool.query(
+      `SELECT o.*, org.org_name, s.stage_name, p.pipeline_name
+       FROM opportunities o
+       LEFT JOIN organizations org ON o.account_org_id = org.id
+       LEFT JOIN stages s ON o.stage_id = s.id
+       LEFT JOIN pipelines p ON o.pipeline_id = p.id
+       WHERE o.id = $1`,
+      [opportunity_id]
+    );
+    const opp = oppResult.rows[0];
+    if (!opp) {
+      return res.status(404).json({ error: 'Opportunity not found' });
+    }
+
+    let economics = [];
+    try {
+      const econ = await pool.query(
+        'SELECT * FROM economics WHERE opportunity_id = $1',
+        [opportunity_id]
+      );
+      economics = econ.rows;
+    } catch (_) {
+      economics = [];
+    }
+
+    let templates = [];
+    try {
+      const t = await pool.query('SELECT * FROM split_templates LIMIT 20');
+      templates = t.rows;
+    } catch (_) {
+      templates = [];
+    }
+
+    const messages = [
+      { role: 'system', content: SYSTEM_PROMPT + '\n\nPropose adjustments to revenue-share splits to balance partner satisfaction with company margin. Respond with strict JSON: {"recommended_split": [{"role": <string>, "percent": <number>}], "rationale": <string>, "guardrails": [<strings>], "warnings": [<strings>]}. No prose outside JSON.' },
+      { role: 'user', content: `Opportunity:\n${JSON.stringify(opp, null, 2)}\n\nCurrent economics rows:\n${JSON.stringify(economics, null, 2)}\n\nAvailable split templates:\n${JSON.stringify(templates, null, 2)}\n\nScenario / objective: ${scenario || 'maximise expected company contribution while keeping channel partner share competitive'}` },
+    ];
+
+    const aiResponse = await callOpenRouter(messages);
+    let parsed = null;
+    try {
+      const match = aiResponse.match(/\{[\s\S]*\}/);
+      parsed = match ? JSON.parse(match[0]) : null;
+    } catch (_) {
+      parsed = null;
+    }
+
+    res.json({
+      opportunity_id,
+      proposal: parsed || { raw: aiResponse },
+      model: OPENROUTER_MODEL,
+    });
+  } catch (err) {
+    console.error('AI optimize-economics error:', err);
+    res.status(500).json({ error: 'AI economics optimization failed', message: err.message });
+  }
+});
+
+// POST /api/ai/predict-bottleneck
+// Predicts likely workflow bottlenecks for an approval workflow instance.
+// Mechanical addition based on audit recommendation: "approval workflow prediction (likely bottlenecks)".
+router.post('/predict-bottleneck', auth, async (req, res) => {
+  try {
+    const { workflow_instance_id, workflow_template_id } = req.body;
+    if (!workflow_instance_id && !workflow_template_id) {
+      return res.status(400).json({ error: 'workflow_instance_id or workflow_template_id is required' });
+    }
+
+    if (isRestricted(req.user.role)) {
+      return res.status(403).json({ error: 'Your role does not have access to workflow prediction' });
+    }
+
+    let instanceData = null;
+    let templateData = null;
+    try {
+      if (workflow_instance_id) {
+        const r = await pool.query(
+          'SELECT * FROM approval_workflow_instances WHERE id = $1',
+          [workflow_instance_id]
+        );
+        instanceData = r.rows[0] || null;
+      }
+      if (workflow_template_id || (instanceData && instanceData.template_id)) {
+        const tid = workflow_template_id || instanceData.template_id;
+        const r = await pool.query(
+          'SELECT * FROM approval_workflow_templates WHERE id = $1',
+          [tid]
+        );
+        templateData = r.rows[0] || null;
+      }
+    } catch (_) {
+      // tables may not exist in all envs; let LLM still reason from inputs
+    }
+
+    const messages = [
+      { role: 'system', content: SYSTEM_PROMPT + '\n\nPredict likely workflow bottlenecks. Respond with strict JSON: {"likely_bottleneck_steps": [<strings>], "estimated_delay_hours": <number>, "root_causes": [<strings>], "mitigations": [<strings>]}. No prose outside JSON.' },
+      { role: 'user', content: `Workflow instance:\n${JSON.stringify(instanceData, null, 2)}\n\nWorkflow template:\n${JSON.stringify(templateData, null, 2)}` },
+    ];
+
+    const aiResponse = await callOpenRouter(messages);
+    let parsed = null;
+    try {
+      const match = aiResponse.match(/\{[\s\S]*\}/);
+      parsed = match ? JSON.parse(match[0]) : null;
+    } catch (_) {
+      parsed = null;
+    }
+
+    res.json({
+      workflow_instance_id: workflow_instance_id || null,
+      workflow_template_id: workflow_template_id || null,
+      prediction: parsed || { raw: aiResponse },
+      model: OPENROUTER_MODEL,
+    });
+  } catch (err) {
+    console.error('AI predict-bottleneck error:', err);
+    res.status(500).json({ error: 'AI bottleneck prediction failed', message: err.message });
+  }
+});
+
+// POST /api/ai/governance-exception
+// Routes a governance exception (out-of-policy ask) and recommends approvers + conditions.
+// Mechanical addition based on audit recommendation: "governance exception handling".
+router.post('/governance-exception', auth, async (req, res) => {
+  try {
+    const { entity_type, entity_id, exception_request } = req.body;
+    if (!exception_request) {
+      return res.status(400).json({ error: 'exception_request is required' });
+    }
+
+    if (isRestricted(req.user.role)) {
+      return res.status(403).json({ error: 'Your role does not have access to governance exception routing' });
+    }
+
+    let entityData = null;
+    if (entity_type && entity_id) {
+      const accessChecks = {
+        opportunity: { table: 'opportunities', alias: 'op', filterFn: opportunityFilter },
+        lead: { table: 'leads', alias: 'l', filterFn: leadFilter },
+        project: { table: 'projects', alias: 'pj', filterFn: projectFilter },
+        risk: { table: 'risks', alias: 'r', filterFn: riskFilter },
+      };
+      if (accessChecks[entity_type]) {
+        const check = accessChecks[entity_type];
+        const hasAccess = await canAccessRecord(
+          pool, check.table, check.alias, check.filterFn, entity_id, req.user.role, req.user.id
+        );
+        if (!hasAccess) {
+          return res.status(403).json({ error: `Access denied to this ${entity_type}` });
+        }
+        try {
+          const r = await pool.query(`SELECT * FROM ${check.table} WHERE id = $1`, [entity_id]);
+          entityData = r.rows[0] || null;
+        } catch (_) {
+          entityData = null;
+        }
+      }
+    }
+
+    const messages = [
+      { role: 'system', content: SYSTEM_PROMPT + '\n\nYou are routing a governance exception. Recommend the minimum approvers and the conditions / mitigations. Respond with strict JSON: {"verdict": "auto_approve|needs_approval|escalate|deny", "required_approvers": [<roles>], "conditions": [<strings>], "audit_notes": [<strings>]}. No prose outside JSON.' },
+      { role: 'user', content: `Exception request: ${exception_request}\n\nEntity: ${entity_type || 'none'} ${entity_id || ''}\n\nEntity data:\n${entityData ? JSON.stringify(entityData, null, 2) : 'none'}` },
+    ];
+
+    const aiResponse = await callOpenRouter(messages);
+    let parsed = null;
+    try {
+      const match = aiResponse.match(/\{[\s\S]*\}/);
+      parsed = match ? JSON.parse(match[0]) : null;
+    } catch (_) {
+      parsed = null;
+    }
+
+    res.json({
+      entity_type: entity_type || null,
+      entity_id: entity_id || null,
+      routing: parsed || { raw: aiResponse },
+      model: OPENROUTER_MODEL,
+    });
+  } catch (err) {
+    console.error('AI governance-exception error:', err);
+    res.status(500).json({ error: 'AI governance exception routing failed', message: err.message });
+  }
+});
+
 module.exports = router;
