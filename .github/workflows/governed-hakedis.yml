@@ -1,0 +1,55 @@
+name: governed-hakedis
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: hakedis
+          POSTGRES_PASSWORD: hakedis
+          POSTGRES_DB: hakedis_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U hakedis -d hakedis_test"
+          --health-interval 5s --health-timeout 5s --health-retries 10
+    env:
+      DATABASE_URL: postgresql://hakedis:hakedis@127.0.0.1:5432/hakedis_test
+      HAKEDIS_JWT_SECRET: ci-only-hakedis-secret-at-least-32-characters
+      RUN_DB_TESTS: "1"
+      NODE_ENV: test
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: |
+            backend/package-lock.json
+            frontend/package-lock.json
+      - run: npm ci
+        working-directory: backend
+      - run: npm ci
+        working-directory: frontend
+      - name: Prove migration replay safety
+        run: |
+          psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f backend/db/migration_012_governed_hakedis.sql
+          psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f backend/db/migration_012_governed_hakedis.sql
+      - run: npm run check
+        working-directory: backend
+      - run: npm run build
+        working-directory: frontend
+      - run: npm audit --omit=dev --audit-level=high
+        working-directory: backend
+      - run: npm audit --omit=dev --audit-level=high
+        working-directory: frontend
+      - run: bash -n start.sh
