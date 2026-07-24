@@ -12,7 +12,7 @@ async function main() {
   const name = String(process.env.PROVISION_ADMIN_NAME || process.env.BOOTSTRAP_ADMIN_NAME || 'Administrator').trim().slice(0, 255);
   if (!email || !email.includes('@')) throw new Error('ADMIN_EMAIL must be a valid email address.');
   if (password.length < 12 || password.length > 72) throw new Error('ADMIN_PASSWORD must contain 12-72 characters.');
-  const passwordHash = await bcrypt.hash(password, 12);
+  const passwordHash = await bcrypt.hash(password, 10);
   await pool.query(
     `INSERT INTO users(full_name,email,password_hash,role,timezone,status)
      VALUES($1,$2,$3,'founding_orchestrator','UTC','active')

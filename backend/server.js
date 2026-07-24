@@ -17,6 +17,7 @@ app.get('/api/health/ready', async (_req, res) => {
 });
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/v1/hakedis', require('./routes/authoritativeHakedis'));
+app.use('/api/ai', require('./routes/authoritativeAi'));
 app.use('/api', (_req, res) => res.status(410).json({ error: 'Legacy/generated route retired; use /api/v1/hakedis' }));
 app.use((error, _req, res, _next) => {
   if (process.env.NODE_ENV !== 'test') console.error(error);
