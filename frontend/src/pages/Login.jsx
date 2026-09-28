@@ -40,19 +40,10 @@ export default function Login() {
     }
   }
 
-  const handleQuickLogin = async (user) => {
+  const handleQuickLogin = (user) => {
     setEmail(user.email)
     setPassword(demoPassword)
     setError('')
-    setLoading(true)
-    try {
-      await login(user.email, demoPassword)
-      navigate('/dashboard')
-    } catch (err) {
-      setError(err.response?.data?.error || 'Login failed.')
-    } finally {
-      setLoading(false)
-    }
   }
 
   return (
@@ -117,6 +108,14 @@ export default function Login() {
 
           <div className="mt-6">
             <p className="mb-3 text-center text-sm font-medium text-slate-400">Quick Login</p>
+            <button
+              type="button"
+              onClick={() => handleQuickLogin(quickUsers[0])}
+              disabled={loading || !demoPassword}
+              className="mb-2 w-full rounded-xl bg-slate-700 p-3 text-sm font-semibold text-white disabled:opacity-50"
+            >
+              Auto Fill Demo Credentials
+            </button>
             <div className="grid grid-cols-2 gap-2">
               {quickUsers.map((u) => (
                 <button
