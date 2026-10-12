@@ -18,6 +18,14 @@ app.get('/api/health/ready', async (_req, res) => {
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/v1/hakedis', require('./routes/authoritativeHakedis'));
 app.use('/api/ai', require('./routes/authoritativeAi'));
+
+// Advisory AI reports only; native execution and approval routes stay unchanged.
+const aiWorkspaceSupport = require("./aiWorkspaceAdapters.cjs");
+const aiWorkspaceDatabase = require("./db/connection.js");
+app.use('/api/report-workspace', require("./aiWorkspace.cjs").createAIWorkspaceRouter({
+  pool: aiWorkspaceDatabase, authenticateToken: require("./middleware/auth.js"),
+  aiRateLimiter: aiWorkspaceSupport.createWorkspaceLimiter(), features: require("./aiWorkspaceFeatures.json"),
+}));
 app.use('/api', (_req, res) => res.status(410).json({ error: 'Legacy/generated route retired; use /api/v1/hakedis' }));
 app.use((error, _req, res, _next) => {
   if (process.env.NODE_ENV !== 'test') console.error(error);

@@ -1,5 +1,11 @@
+import AIReport from './AIReport'
+
 export default function AIResponseDisplay({ response }) {
-  if (!response) return null
+  if (response === null || response === undefined) return null
+
+  if (typeof response !== 'string' || /^\s*(?:\{|\[|```json)/i.test(response)) {
+    return <AIReport response={response} title="AI response" />
+  }
 
   const text = typeof response === 'string' ? response : JSON.stringify(response, null, 2)
 

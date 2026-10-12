@@ -10,9 +10,9 @@ const tabs = [
 ]
 
 function formatResult(data) {
-  if (!data) return ''
+  if (data === null || data === undefined) return ''
   if (typeof data === 'string') return data
-  return data.analysis || data.result || data.response || JSON.stringify(data, null, 2)
+  return data
 }
 
 export default function AIInsights() {
@@ -79,6 +79,19 @@ export default function AIInsights() {
     reset()
   }
 
+  const fillExample = (index) => {
+    reset()
+    if (tab === 'exception') {
+      setExceptionRequest([
+        'Review a time-sensitive approval exception. Document the policy, business reason, approvers, and audit evidence before deciding.',
+        'Assess an exception where the assigned reviewer is unavailable. Identify an authorized substitute and the controls needed.',
+        'Evaluate a request to shorten a governance review. Explain risks, required approvals, and a compliant alternative.',
+      ][index])
+      setEntityType('opportunity')
+      // Keep any real record reference already supplied by the user.
+    }
+  }
+
   return (
     <div className="animate-fade-in">
       <div className="mb-6 flex items-center justify-between">
@@ -121,6 +134,10 @@ export default function AIInsights() {
           onSubmit={handleSubmit}
           className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm space-y-4"
         >
+          {tab === 'exception' && <div className="flex flex-wrap gap-2" aria-label="Example inputs">
+            {['Approval review', 'Operations review', 'Executive review'].map((label, index) => <button key={label} type="button" onClick={() => fillExample(index)} disabled={loading} className="rounded-lg border border-blue-200 px-3 py-2 text-sm text-blue-700 disabled:opacity-50">{label}</button>)}
+          </div>}
+          {tab !== 'exception' && <p className="text-xs text-gray-500">Enter a real {tab === 'economics' ? 'opportunity' : 'workflow instance'} ID. Examples cannot supply a record reference.</p>}
           {tab === 'economics' && (
             <div>
               <label className="mb-1 block text-sm font-medium text-gray-700">

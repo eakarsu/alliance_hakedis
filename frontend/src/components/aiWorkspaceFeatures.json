@@ -1,0 +1,72 @@
+[
+  {
+    "name": "AiWorkflowBottleneckDetectionPage",
+    "id": "gap-ai-alliance_hakedis/ai-workflow-bottleneck-detection",
+    "title": "AI workflow bottleneck detection",
+    "description": "Prepare a professional advisory report for ai workflow bottleneck detection using the brief and evidence you provide. Review the findings, assumptions, and action plan before applying changes.",
+    "samples": []
+  },
+  {
+    "name": "DealStructureRecommendationsPage",
+    "id": "gap-ai-alliance_hakedis/deal-structure-recommendations",
+    "title": "Deal-structure recommendations",
+    "description": "Prepare a professional advisory report for deal-structure recommendations using the brief and evidence you provide. Review the findings, assumptions, and action plan before applying changes.",
+    "samples": []
+  },
+  {
+    "name": "EconomicsSplitOptimizationAiPage",
+    "id": "gap-ai-alliance_hakedis/economics-split-optimization-ai",
+    "title": "Economics / split optimization AI",
+    "description": "Prepare a professional advisory report for economics / split optimization ai using the brief and evidence you provide. Review the findings, assumptions, and action plan before applying changes.",
+    "samples": []
+  },
+  {
+    "name": "ExternalTaxReporting10991042GenerationPage",
+    "id": "gap-nonai-alliance_hakedis/external-tax-reporting-10991042-generation",
+    "title": "External tax reporting (1099/1042 generation)",
+    "description": "Prepare a professional advisory report for external tax reporting (1099/1042 generation) using the brief and evidence you provide. Review the findings, assumptions, and action plan before applying changes.",
+    "samples": []
+  },
+  {
+    "name": "FullESignatureIntegrationPage",
+    "id": "gap-nonai-alliance_hakedis/full-e-signature-integration",
+    "title": "Full e-signature integration",
+    "description": "Prepare a professional advisory report for full e-signature integration using the brief and evidence you provide. Review the findings, assumptions, and action plan before applying changes.",
+    "samples": []
+  },
+  {
+    "name": "GovernanceExceptionTriagePage",
+    "id": "gap-ai-alliance_hakedis/governance-exception-triage",
+    "title": "Governance exception triage",
+    "description": "Prepare a professional advisory report for governance exception triage using the brief and evidence you provide. Review the findings, assumptions, and action plan before applying changes.",
+    "samples": []
+  },
+  {
+    "name": "MobilePartnerPortalUiPage",
+    "id": "gap-nonai-alliance_hakedis/mobile-partner-portal-ui",
+    "title": "Mobile partner-portal UI",
+    "description": "Prepare a professional advisory report for mobile partner-portal ui using the brief and evidence you provide. Review the findings, assumptions, and action plan before applying changes.",
+    "samples": []
+  },
+  {
+    "name": "MultiLevelGovernanceApprovalsBoardCfoSequencedPage",
+    "id": "gap-nonai-alliance_hakedis/multi-level-governance-approvals-board-cfo-sequenced",
+    "title": "Multi-level governance approvals (board + CFO sequenced)",
+    "description": "Prepare a professional advisory report for multi-level governance approvals (board + cfo sequenced) using the brief and evidence you provide. Review the findings, assumptions, and action plan before applying changes.",
+    "samples": []
+  },
+  {
+    "name": "PayoutPredictionPage",
+    "id": "gap-ai-alliance_hakedis/payout-prediction",
+    "title": "Payout prediction",
+    "description": "Prepare a professional advisory report for payout prediction using the brief and evidence you provide. Review the findings, assumptions, and action plan before applying changes.",
+    "samples": []
+  },
+  {
+    "name": "SoxGradeSodControlsReportingPage",
+    "id": "gap-nonai-alliance_hakedis/sox-grade-sod-controls-reporting",
+    "title": "SOX-grade SoD controls reporting",
+    "description": "Prepare a professional advisory report for sox-grade sod controls reporting using the brief and evidence you provide. Review the findings, assumptions, and action plan before applying changes.",
+    "samples": []
+  }
+]

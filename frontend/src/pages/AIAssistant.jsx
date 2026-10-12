@@ -338,7 +338,7 @@ export default function AIAssistant() {
         prompt: messageText,
       })
 
-      const aiContent = res.data.analysis || res.data.response || res.data.result || res.data.message || (typeof res.data === 'string' ? res.data : JSON.stringify(res.data, null, 2))
+      const aiContent = res.data.analysis ?? res.data.response ?? res.data.result ?? res.data.message ?? res.data
 
       setMessages(prev => [...prev, {
         role: 'assistant',
@@ -363,7 +363,7 @@ export default function AIAssistant() {
   }
 
   const handleQuestionClick = (question) => {
-    sendMessage(question)
+    setInput(question)
   }
 
   return (
@@ -465,7 +465,7 @@ export default function AIAssistant() {
           >
             <span className="flex items-center gap-1">
               <Sparkles className="h-3 w-3" />
-              Suggested questions for {features.find(f => f.value === feature)?.label} ({(featureQuestions[feature] || featureQuestions.general).length})
+              Fill a sample question for {features.find(f => f.value === feature)?.label} ({(featureQuestions[feature] || featureQuestions.general).length})
             </span>
             {showQuestions ? <ChevronDown className="h-3 w-3" /> : <ChevronUp className="h-3 w-3" />}
           </button>
